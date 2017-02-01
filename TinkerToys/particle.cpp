@@ -23,7 +23,7 @@ Particle::Particle()
 {
 }
 
-Particle::Particle(double x, double y, double xDir, double yDir, double r_temp, bool anchored_temp)
+Particle::Particle(double x, double y, double xDir, double yDir, double r_temp, bool anchored_temp, char color_temp)
 {
 	pos[0] = x;
 	pos[1] = y;
@@ -32,6 +32,7 @@ Particle::Particle(double x, double y, double xDir, double yDir, double r_temp, 
 	r = r_temp;
 	anchored = anchored_temp;
 	m = r*r;
+	color = color_temp;
 }
 
 void Particle::GetPosition(double pos_temp[DIM])
@@ -74,6 +75,7 @@ void Particle::SetForce(double f_temp[DIM])
 ParticleSystem::ParticleSystem()
 {
 	time = 0.0;
+	DeltaT = 0.1;
 }
 
 ParticleSystem::~ParticleSystem()
@@ -94,7 +96,7 @@ int ParticleSystem::ParticleDims()
 	return GetNumParticles()*2*DIM;
 }
 
-void ParticleSystem::IncrementTime(double DeltaT)
+void ParticleSystem::IncrementTime()
 {
 	time += DeltaT;
 }
@@ -235,6 +237,16 @@ Force * ParticleSystem::GetForce(int i)
 	return fArray[i];
 }
 
+void ParticleSystem::setDeltaT(double dt)
+{
+	DeltaT = dt;
+}
+
+double ParticleSystem::getDeltaT()
+{
+	return DeltaT;
+}
+
 //
 // ODE Solver
 ///
@@ -271,7 +283,7 @@ void EulerStep(ParticleSystem & ps, double DeltaT)
 	ScaleVector(derivatives, DeltaT, size);
 	AddVector(oldPositions, derivatives, newPositions, size);
 	ps.ParticleSetState(newPositions);
-	ps.IncrementTime(DeltaT);
+	ps.IncrementTime();
 	delete [] oldPositions;
 	delete [] derivatives;
 	delete [] newPositions;
@@ -306,7 +318,7 @@ void MidpointStep(ParticleSystem & ps, double DeltaT)
 	ps.ParticleSetState(finalPositions);
 
 	// increment time
-	ps.IncrementTime(DeltaT);
+	ps.IncrementTime();
 
 	// cleanup
 	delete [] oldPositions;
@@ -316,7 +328,7 @@ void MidpointStep(ParticleSystem & ps, double DeltaT)
 	delete [] finalPositions;
 }
 
-void RungeKuttaStep(ParticleSystem & ps, double DeltaT)
+void RungeKuttaStep(ParticleSystem & ps)
 {
 	int size = ps.ParticleDims();
 
@@ -327,7 +339,7 @@ void RungeKuttaStep(ParticleSystem & ps, double DeltaT)
 	// Calculate the delta of an Euler step
 	double * k1 = new double[size];
 	ps.ParticleGetDerivative(k1);
-	ScaleVector(k1, DeltaT, size);
+	ScaleVector(k1, ps.getDeltaT(), size);
 
 	// Update the particle system by moving the k1/2
 	double * p2 = new double[size];
@@ -338,7 +350,7 @@ void RungeKuttaStep(ParticleSystem & ps, double DeltaT)
 
 	double * k2 = new double[size];
 	ps.ParticleGetDerivative(k2);
-	ScaleVector(k2, DeltaT, size);
+	ScaleVector(k2, ps.getDeltaT(), size);
 	double * p3 = new double[size];
 	CopyVector(p3, k2, size); // p2 gets k1
 	ScaleVector(p3, 0.5, size);
@@ -347,7 +359,7 @@ void RungeKuttaStep(ParticleSystem & ps, double DeltaT)
 
 	double * k3 = new double[size];
 	ps.ParticleGetDerivative(k3);
-	ScaleVector(k3, DeltaT, size);
+	ScaleVector(k3, ps.getDeltaT(), size);
 	double * p4 = new double[size];
 	CopyVector(p4, k3, size); // p2 gets k1
 	AddVector(oldPositions, p4, p4, size);
@@ -355,7 +367,7 @@ void RungeKuttaStep(ParticleSystem & ps, double DeltaT)
 
 	double * k4 = new double[size];
 	ps.ParticleGetDerivative(k4);
-	ScaleVector(k4, DeltaT, size);
+	ScaleVector(k4, ps.getDeltaT(), size);
 
 	double * finalPositions = new double[size];
 	ScaleVector(k1, (1./6.), size);
@@ -369,7 +381,7 @@ void RungeKuttaStep(ParticleSystem & ps, double DeltaT)
 	ps.ParticleSetState(finalPositions);
 
 	// increment time
-	ps.IncrementTime(DeltaT);
+	ps.IncrementTime();
 
 	// cleanup
 	delete [] oldPositions;

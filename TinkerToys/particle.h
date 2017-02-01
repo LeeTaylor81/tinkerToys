@@ -20,7 +20,7 @@ class Particle
 public:
 	Particle();
 	Particle(double pos_temp[DIM], double dir_temp[DIM], double r_temp, bool anchored_temp);
-	Particle(double x, double y, double xDir, double yDir, double r_temp, bool anchored_temp);
+	Particle(double x, double y, double xDir, double yDir, double r_temp, bool anchored_temp, char color_temp);
 
 	// accessor methods:
 	double GetRadius() { return r; }
@@ -48,6 +48,8 @@ public:
 	void SetDirectiony(double y) {dir[1] = y;}
 	void SetForcey(double y) {f[1] = y;}
 
+	char getColor() {return color;}
+
 private:
 	double pos[DIM]; // position
 	double dir[DIM]; // velocity
@@ -55,6 +57,7 @@ private:
 	double r; // radius
 	double m; // mass
 	bool anchored; // fixed or moving?
+	char color; // color initial
 };
 
 class ParticleSystem
@@ -71,12 +74,15 @@ public:
 	int GetNumForces();
 	Force * GetForce(int i);
 
+	void setDeltaT(double dt);
+	double getDeltaT();
+
 	// Methods for ODE solvers:
 	int ParticleDims();
 	void ParticleGetState(double * dst);
 	void ParticleSetState(double * src);
 	void ParticleGetDerivative(double * dst);
-	void IncrementTime(double DeltaT);
+	void IncrementTime();
 
 private:
 	void ClearForces();
@@ -85,11 +91,12 @@ private:
 	vector<Particle*> pArray;
 	vector<Force*> fArray;
 	double time;
+	double DeltaT;
 };
 
 void EulerStep(ParticleSystem & ps, double DeltaT);
 void MidpointStep(ParticleSystem & ps, double DeltaT);
-void RungeKuttaStep(ParticleSystem & ps, double DeltaT);
+void RungeKuttaStep(ParticleSystem & ps);
 
 #endif
 

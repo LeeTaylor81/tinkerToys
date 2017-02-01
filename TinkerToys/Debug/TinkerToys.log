@@ -1,8 +1,9 @@
-﻿  vector.cpp
-  particle.cpp
-  graphics_springs.cpp
-  forces.cpp
-  collision.cpp
+﻿  forces.cpp
   Generating Code...
+  Compiling...
+  graphics_springs.cpp
+  Generating Code...
+  Skipping... (no relevant changes detected)
+  particle.cpp
   TinkerToys.vcxproj -> C:\Users\Lee Taylor\Desktop\spring 2017\CS3600\TinkerToys\Debug\TinkerToys.exe
   TinkerToys.vcxproj -> C:\Users\Lee Taylor\Desktop\spring 2017\CS3600\TinkerToys\Debug\TinkerToys.pdb (Full PDB)
